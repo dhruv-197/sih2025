@@ -126,27 +126,6 @@ export const Chatbot: React.FC<{ mineData: MineData; isOpen: boolean; onClose: (
                             )}
                             <div className={`max-w-xs md:max-w-md p-3 rounded-2xl ${msg.sender === 'user' ? 'bg-accent text-white rounded-br-none' : 'bg-card-light dark:bg-card text-text-primary-light dark:text-text-primary rounded-bl-none'}`}>
                                 <p className="text-sm" style={{ whiteSpace: 'pre-wrap' }}>{msg.text}</p>
-                                {msg.sender === 'ai' && msg.sources && msg.sources.length > 0 && (
-                                    <div className="mt-3 pt-3 border-t border-border-light/50 dark:border-border/50">
-                                        <h4 className="text-xs font-bold mb-1 opacity-80">Sources:</h4>
-                                        <ul className="space-y-1 text-xs list-decimal list-inside">
-                                            {msg.sources.map((source, i) => (
-                                                source.web?.uri && (
-                                                    <li key={i}>
-                                                        <a 
-                                                            href={source.web.uri} 
-                                                            target="_blank" 
-                                                            rel="noopener noreferrer"
-                                                            className="underline hover:opacity-80 transition-opacity break-words"
-                                                        >
-                                                            {source.web.title || new URL(source.web.uri).hostname}
-                                                        </a>
-                                                    </li>
-                                                )
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )}
                             </div>
                         </div>
                     ))}
