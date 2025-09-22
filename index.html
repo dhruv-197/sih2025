@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MineSafe India - AI Rockfall Prediction</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script>
+    <style>
+      :root {
+        /* Light theme glow colors (very subtle) */
+        --glow-1: rgba(99, 102, 241, 0.05);
+        --glow-2: rgba(56, 189, 248, 0.04);
+        --glow-3: rgba(34, 197, 94, 0.04);
+        --glow-4: rgba(236, 72, 153, 0.05);
+        --glow-5: rgba(250, 204, 21, 0.03);
+      }
+      html.dark {
+        /* Dark theme glow colors (more vibrant) */
+        --glow-1: rgba(236, 72, 153, 0.10);
+        --glow-2: rgba(99, 102, 241, 0.08);
+        --glow-3: rgba(56, 189, 248, 0.08);
+        --glow-4: rgba(34, 197, 94, 0.08);
+        --glow-5: rgba(250, 204, 21, 0.06);
+      }
+      body {
+        /* Set a base background color */
+        background-color: #0b1220;
+        /* Layer multiple background images. The first image is on top. */
+        background-image: 
+          /* 1. Dynamic, cursor-following multi-color glow (TOP LAYER) */
+          radial-gradient(
+            900px circle at var(--mouse-x, -1000px) var(--mouse-y, -1000px),
+            var(--glow-1),
+            var(--glow-2),
+            var(--glow-3),
+            var(--glow-4),
+            var(--glow-5),
+            transparent 70%
+          ),
+          /* 2. Static, subtle background "nebula" gradients (BOTTOM LAYER) */
+          radial-gradient(circle at 80% 20%, rgba(99, 102, 241, 0.1), transparent 30%),
+          radial-gradient(circle at 20% 80%, rgba(236, 72, 153, 0.1), transparent 30%);
+        transition: background 0.15s ease-out;
+      }
+
+      /* Subtle colorful borders for panels/cards without changing layout */
+      .card-gradient {
+        background-image: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+        border: 1px solid rgba(148, 163, 184, 0.15);
+        box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.12) inset;
+      }
+      .dark .card-gradient {
+         border: 1px solid rgba(148, 163, 184, 0.15);
+         box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.12) inset;
+      }
+      html:not(.dark) .card-gradient {
+          background-image: linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0.01));
+          border: 1px solid rgba(0,0,0,0.08);
+          box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.06) inset;
+      }
+    </style>
+    <script>
+      tailwind.config = {
+        darkMode: 'class', // Enable class-based dark mode
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+            colors: {
+              // Core accent colors (used in both themes)
+              'accent': '#6366F1',           // indigo-500
+              'accent-hover': '#4F46E5',     // indigo-600
+              'secondary-accent': '#EC4899', // pink-500
+              'critical': '#EF4444',         // red-500
+              'high': '#F59E0B',             // amber-500
+              'medium': '#22D3EE',           // cyan-400
+              'low': '#22C55E',              // green-500
+              
+              // Light Theme Colors
+              'background-light': '#f8fafc', // slate-50
+              'sidebar-light': '#f1f5f9',    // slate-100
+              'card-light': '#ffffff',
+              'primary-light': '#e2e8f0',    // slate-200
+              'text-primary-light': '#0f172a', // slate-900
+              'text-secondary-light': '#475569', // slate-600
+              'border-light': '#cbd5e1',     // slate-300
+
+              // Dark Theme Colors
+              'background': '#0b1220',      // custom deep night
+              'sidebar': '#0f172a',         // slate-900
+              'card': '#111827',            // gray-900
+              'primary': '#1f2937',         // gray-800
+              'text-primary': '#F8FAFC',    // slate-50
+              'text-secondary': '#94A3B8',  // slate-400
+              'border': '#1f2937',
+            },
+            animation: {
+              'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              'fade-in': 'fadeIn 0.5s ease-in-out',
+            },
+            keyframes: {
+              fadeIn: {
+                '0%': { opacity: '0', transform: 'translateY(10px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <script>
+      // Cursor-follow glow effect: update CSS variables based on pointer position
+      const setMouseVars = (event) => {
+        const x = event.clientX + window.scrollX;
+        const y = event.clientY + window.scrollY;
+        document.body.style.setProperty('--mouse-x', `${x}px`);
+        document.body.style.setProperty('--mouse-y', `${y}px`);
+      };
+      window.addEventListener('mousemove', setMouseVars, { passive: true });
+      window.addEventListener('scroll', (e) => {
+        // Keep glow anchored to the cursor while scrolling
+        const { x, y } = (window.__lastMousePos || { x: window.innerWidth/2, y: window.innerHeight/2 });
+        document.body.style.setProperty('--mouse-x', `${x + window.scrollX}px`);
+        document.body.style.setProperty('--mouse-y', `${y + window.scrollY}px`);
+      }, { passive: true });
+      window.addEventListener('mousemove', (e) => (window.__lastMousePos = { x: e.clientX, y: e.clientY }), { passive: true });
+    </script>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
+    "recharts": "https://aistudiocdn.com/recharts@^3.2.0",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.19.0",
+    "react/": "https://aistudiocdn.com/react@^19.1.1/",
+    "react": "https://aistudiocdn.com/react@^19.1.1"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="font-sans antialiased">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>

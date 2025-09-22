@@ -1,0 +1,7 @@
+{
+  "name": "AI-Based Rockfall Prediction and Alert System Main Project",
+  "description": "A web-based dashboard for an AI system that predicts potential rockfall incidents in open-pit mines. It visualizes vulnerable zones, displays real-time alerts, and shows sensor data to enable safer and more resilient mining practices.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
