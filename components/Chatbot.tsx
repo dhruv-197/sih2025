@@ -36,7 +36,7 @@ export const Chatbot: React.FC<{ mineData: MineData; isOpen: boolean; onClose: (
     useEffect(() => {
         if (isOpen && messages.length === 0) {
             setMessages([
-                { sender: 'ai', text: `Hello! I'm the MineSafe AI Assistant for ${mineData.mine.name}. How can I help you today? You can ask about the current risk, alerts, or analysis.` }
+                { sender: 'ai', text: `Hello! I'm the MineSafe AI Assistant for ${mineData.mine.name}. How can I help you today? You can ask about the current risk, risk of rockfall, alerts, or analysis.` }
             ]);
         }
     }, [isOpen, mineData]);
